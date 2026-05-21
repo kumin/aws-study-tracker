@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AWS SAA-C03 Study Tracker</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3350;
+      --accent: #f90;
+      --accent2: #ff6b35;
+      --blue: #4f9cf9;
+      --green: #22c55e;
+      --red: #ef4444;
+      --text: #e8eaf6;
+      --text-muted: #8892b0;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 32px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .logo-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .stat-pill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .stat-pill span {
+      color: var(--accent);
+      font-weight: 700;
+      margin-left: 4px;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    /* ── Progress Overview ── */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .overview-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .overview-card .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .overview-card .value {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .overview-card .sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .value.orange { color: var(--accent); }
+    .value.green  { color: var(--green); }
+    .value.blue   { color: var(--blue); }
+    .value.red    { color: var(--red); }
+
+    /* Overall progress bar */
+    .overall-progress {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .overall-progress h2 {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .progress-bar-wrap {
+      background: var(--surface2);
+      border-radius: 100px;
+      height: 14px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.5s ease;
+      min-width: 2px;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .progress-labels strong {
+      color: var(--accent);
+    }
+
+    /* ── Week sections ── */
+    .week-section {
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .week-header {
+      background: var(--surface);
+      padding: 16px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .week-header:hover { background: var(--surface2); }
+
+    .week-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .week-badge {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #000;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .week-badge.completed {
+      background: var(--green);
+    }
+
+    .week-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .week-dates {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .week-header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .week-progress-mini {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .week-progress-mini .bar {
+      width: 80px;
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .week-progress-mini .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 100px;
+      transition: width 0.4s ease;
+    }
+
+    .chevron {
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.3s ease;
+    }
+
+    .week-section.open .chevron { transform: rotate(180deg); }
+
+    /* ── Day rows ── */
+    .week-body {
+      display: none;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+
+    .week-section.open .week-body { display: block; }
+
+    .day-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .day-row:last-child { border-bottom: none; }
+    .day-row:hover { background: var(--surface); }
+    .day-row.done { opacity: 0.6; }
+
+    .day-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .day-row.done .day-checkbox {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .day-checkbox::after {
+      content: '✓';
+      font-size: 12px;
+      color: #fff;
+      display: none;
+      font-weight: 700;
+    }
+
+    .day-row.done .day-checkbox::after { display: block; }
+
+    .day-info { flex: 1; min-width: 0; }
+
+    .day-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .day-topic {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .day-row.done .day-topic {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .day-resource {
+      font-size: 11px;
+      margin-top: 4px;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .tag-maarek  { background: #1e3a5f; color: #4f9cf9; }
+    .tag-dojo    { background: #1e2e3a; color: #f97c4f; }
+    .tag-oreilly { background: #1e3a20; color: #4fc972; }
+    .tag-aws     { background: #3a2e1e; color: var(--accent); }
+    .tag-exam    { background: #2e1e3a; color: #c084fc; }
+
+    .udemy-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      padding: 2px 10px;
+      border-radius: 20px;
+      background: #2a1f00;
+      color: var(--accent);
+      border: 1px solid #f9901a44;
+      text-decoration: none;
+      margin-left: 6px;
+      transition: all 0.2s;
+    }
+    .udemy-link:hover {
+      background: #f90;
+      color: #000;
+      border-color: #f90;
+    }
+
+    .day-review {
+      background: var(--surface2);
+      border-left: 3px solid var(--accent);
+    }
+
+    .day-exam {
+      background: var(--surface2);
+      border-left: 3px solid #c084fc;
+    }
+
+    .day-exam-day {
+      background: linear-gradient(135deg, #1a0f2e, #0f1117);
+      border-left: 3px solid var(--green);
+    }
+
+    /* ── Notes section ── */
+    .notes-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 32px;
+    }
+
+    .notes-section h2 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .notes-textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      padding: 14px;
+      resize: vertical;
+      min-height: 120px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .notes-textarea:focus { border-color: var(--accent); }
+
+    /* ── Exam info banner ── */
+    .exam-banner {
+      background: linear-gradient(135deg, #1a1200, #0f1117);
+      border: 1px solid #f90a;
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .exam-banner-left h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .exam-banner-left p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .exam-banner-right {
+      display: flex;
+      gap: 24px;
+    }
+
+    .exam-stat {
+      text-align: center;
+    }
+
+    .exam-stat .num {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+    }
+
+    .exam-stat .lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ── Header buttons ── */
+    .header-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .header-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .header-btn.btn-export:hover { border-color: var(--green); color: var(--green); }
+    .header-btn.btn-reset:hover  { border-color: var(--red);   color: var(--red);   }
+
+    #file-btn {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #file-btn:hover { border-color: var(--green); color: var(--green); }
+
+    /* ── Toast notification ── */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      padding: 12px 24px;
+      border-radius: 100px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #toast.success { border-color: var(--green); color: var(--green); }
+    #toast.error   { border-color: var(--red);   color: var(--red);   }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      margin-top: 48px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      main { padding: 16px; }
+      header { padding: 16px; }
+      .header-stats { display: none; }
+      .overview-grid { grid-template-columns: repeat(2, 1fr); }
+      .exam-banner-right { gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">☁️</div>
+      <div class="logo-text">
+        <h1>AWS SAA-C03 Tracker</h1>
+        <p>Solutions Architect Associate · Target: Jul 25, 2026</p>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-pill">Days left <span id="days-left">—</span></div>
+      <div class="stat-pill">Progress <span id="header-pct">0%</span></div>
+      <button class="header-btn btn-export" id="file-btn" onclick="connectOrSave()" title="Connect to a JSON file for automatic saving">📂 Connect File</button>
+      <span id="file-status" style="font-size:12px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <button class="header-btn btn-reset" onclick="resetProgress()">↺ Reset</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Exam banner -->
+  <div class="exam-banner">
+    <div class="exam-banner-left">
+      <h3>🎯 Exam Target: July 25, 2026</h3>
+      <p>AWS Certified Solutions Architect – Associate (SAA-C03) · Pass score: ~720/1000 (72%)</p>
+    </div>
+    <div class="exam-banner-right">
+      <div class="exam-stat">
+        <span class="num">65</span>
+        <span class="lbl">Questions</span>
+      </div>
+      <div class="exam-stat">
+        <span class="num">130</span>
+        <span class="lbl">Minutes</span>
+      </div>
+      <div class="exam-stat">
+        <span class="num">$150</span>
+        <span class="lbl">USD</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overview cards -->
+  <div class="overview-grid">
+    <div class="overview-card">
+      <div class="label">Overall Progress</div>
+      <div class="value orange" id="pct-overall">0%</div>
+      <div class="sub" id="tasks-done">0 of 63 days completed</div>
+    </div>
+    <div class="overview-card">
+      <div class="label">Days Remaining</div>
+      <div class="value blue" id="days-remaining">—</div>
+      <div class="sub">until exam day</div>
+    </div>
+    <div class="overview-card">
+      <div class="label">Current Week</div>
+      <div class="value green" id="current-week">—</div>
+      <div class="sub" id="current-week-name">—</div>
+    </div>
+    <div class="overview-card">
+      <div class="label">Streak</div>
+      <div class="value orange" id="streak">0</div>
+      <div class="sub">days in a row</div>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="overall-progress">
+    <h2>📊 Course Completion</h2>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-labels">
+      <span>Start · May 20</span>
+      <strong id="pct-label">0% complete</strong>
+      <span>Exam · Jul 25</span>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="notes-section" style="margin-bottom:32px;">
+    <h2>📝 Study Notes</h2>
+    <textarea class="notes-textarea" id="study-notes" placeholder="Write your notes, weak areas, key points to remember..."></textarea>
+  </div>
+
+  <!-- Weeks container -->
+  <div id="weeks-container"></div>
+
+</main>
+
+<footer>
+  AWS SAA-C03 Study Tracker · Progress auto-saved in browser · Export anytime for a backup · Good luck! 🚀
+</footer>
+
+<div id="toast"></div>
+
+<script>
+// ─── Study Plan Data ──────────────────────────────────────────────────────────
+// Lectures sourced directly from the Maarek SAA-C03 course (399 lectures)
+const weeks = [
+  {
+    week: 1,
+    title: "IAM & EC2 Foundations",
+    dates: "May 20 – May 26",
+    days: [
+      { date: "May 20, Wed", topic: "#8 AWS Cloud Overview - Regions & AZ · #11 IAM Introduction: Users, Groups, Policies · #14 IAM Policies · #16 IAM MFA Overview", resource: "S3 + S4", tag: "tag-maarek", startId: 26097978 },
+      { date: "May 21, Thu", topic: "#18 AWS Access Keys, CLI and SDK · #22 AWS CLI Hands On · #24 AWS CloudShell · #25 IAM Roles for AWS Services · #29 IAM Best Practices", resource: "S4", tag: "tag-maarek", startId: 26098034 },
+      { date: "May 22, Fri", topic: "#32 EC2 Basics · #33 Create EC2 Instance with User Data (Hands On) · #34 EC2 Instance Types · #35 Security Groups & Classic Ports · #42 EC2 Instance Connect", resource: "S5", tag: "tag-maarek", startId: 26098112 },
+      { date: "May 23, Sat", topic: "#44 EC2 Instance Purchasing Options · #45 Spot Instances & Spot Fleet · #46 EC2 Launch Types Hands On · #47 Private vs Public vs Elastic IP", resource: "S5 + S6", tag: "tag-maarek", startId: 26098170 },
+      { date: "May 24, Sun", topic: "#49 EC2 Placement Groups · #51 Elastic Network Interfaces (ENI) · #54 EC2 Hibernate · #56 EBS Overview · #58 EBS Snapshots · #60 AMI Overview", resource: "S6 + S7", tag: "tag-maarek", startId: 13528080 },
+      { date: "May 25, Mon", topic: "#62 EC2 Instance Store · #63 EBS Volume Types · #64 EBS Multi-Attach · #65 EBS Encryption · #66 Amazon EFS · #68 EFS vs EBS", resource: "S7", tag: "tag-maarek", startId: 26098288 },
+      { date: "May 26, Tue", topic: "⭐ Review Week 1 + 20 practice questions (IAM + EC2 + EBS)", resource: "Practice Exams", tag: "tag-dojo", review: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+    ]
+  },
+  {
+    week: 2,
+    title: "HA & Scaling · RDS · Route 53",
+    dates: "May 27 – June 2",
+    days: [
+      { date: "May 27, Wed", topic: "#70 High Availability & Scalability · #71 ELB Overview · #72 ALB · #75 NLB · #77 GWLB · #78 Sticky Sessions · #80 SSL Certificates · #82 Connection Draining", resource: "S8", tag: "tag-maarek", startId: 13531374 },
+      { date: "May 28, Thu", topic: "#83 ASG Overview · #84 ASG Hands On · #85 Scaling Policies · #86 Scaling Policies Hands On", resource: "S8", tag: "tag-maarek", startId: 13528102 },
+      { date: "May 29, Fri", topic: "#87 Amazon RDS Overview · #88 RDS Read Replicas vs Multi AZ · #89 RDS Hands On · #90 RDS Custom · #95 RDS Security · #96 RDS Proxy", resource: "S9", tag: "tag-maarek", startId: 13528150 },
+      { date: "May 30, Sat", topic: "#91 Amazon Aurora · #93 Aurora Advanced Concepts · #94 RDS & Aurora Backup · #97 ElastiCache Overview · #99 ElastiCache for Solution Architects", resource: "S9", tag: "tag-maarek", startId: 13528160 },
+      { date: "May 31, Sun", topic: "#101 What is DNS? · #102 Route 53 Overview · #106 TTL · #107 CNAME vs Alias · #108–117 All Routing Policies · #111 Health Checks · #119 Resolvers & Hybrid DNS", resource: "S10", tag: "tag-maarek", startId: 28384280 },
+      { date: "Jun 1, Mon",  topic: "#121 Solutions Architecture Overview · #122 WhatsTheTime.com · #123 MyClothes.com · #124 MyWordPress.com · Instantiating apps quickly", resource: "S11", tag: "tag-maarek", startId: 13727286 },
+      { date: "Jun 2, Tue",  topic: "⭐ Review Week 2 + 20 practice questions (ELB/ASG + RDS/Aurora + Route 53)", resource: "Practice Exams", tag: "tag-dojo", review: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+    ]
+  },
+  {
+    week: 3,
+    title: "S3 · CloudFront · Storage Extras",
+    dates: "June 3 – June 9",
+    days: [
+      { date: "Jun 3, Wed",  topic: "S12: S3 buckets & objects · versioning · replication (CRR/SRR) · storage classes · S3 lifecycle rules · Event Notifications", resource: "S12", tag: "tag-maarek", startId: 13528314 },
+      { date: "Jun 4, Thu",  topic: "S12: S3 performance & multi-part upload · S3 Select · Batch Operations · Requester Pays · S3 Event Bridge", resource: "S12 + S13", tag: "tag-maarek", startId: 13528352 },
+      { date: "Jun 5, Fri",  topic: "S14: S3 Security — SSE-S3 / SSE-KMS / SSE-C / client-side encryption · bucket policies · pre-signed URLs · CORS · MFA delete · Object Lock · Glacier Vault Lock · S3 Access Points", resource: "S14", tag: "tag-maarek", startId: 13528318 },
+      { date: "Jun 6, Sat",  topic: "S15: CloudFront — distributions, origins, cache behaviors, OAC · Geo restriction · Signed URLs vs Signed Cookies · Price classes · CloudFront Hands On", resource: "S15", tag: "tag-maarek", startId: 13528370 },
+      { date: "Jun 7, Sun",  topic: "S15: Global Accelerator vs CloudFront · S3 Transfer Acceleration · S16: Snow family (Snowcone/Snowball/Snowmobile) · Storage Gateway (S3/FSx/Volume/Tape)", resource: "S15 + S16", tag: "tag-maarek", startId: 18078277 },
+      { date: "Jun 8, Mon",  topic: "S16: FSx (Windows / Lustre / NetApp ONTAP / OpenZFS) · AWS DataSync · AWS Transfer Family", resource: "S16", tag: "tag-maarek", startId: 26099040 },
+      { date: "Jun 9, Tue",  topic: "⭐ Review Week 3 + 20 practice questions (S3 + CloudFront + Storage)", resource: "Practice Exams", tag: "tag-dojo", review: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+    ]
+  },
+  {
+    week: 4,
+    title: "Decoupling · Containers · Serverless",
+    dates: "June 10 – June 16",
+    days: [
+      { date: "Jun 10, Wed", topic: "S17: SQS (standard vs FIFO, visibility timeout, DLQ, delay queues, long polling) · SNS (topics, fan-out, FIFO SNS, message filtering)", resource: "S17", tag: "tag-maarek", startId: 13528452 },
+      { date: "Jun 11, Thu", topic: "S17: Kinesis Data Streams · Kinesis Firehose · Kinesis Data Analytics · Kinesis Video Streams · Amazon MQ", resource: "S17", tag: "tag-maarek", startId: 13528462 },
+      { date: "Jun 12, Fri", topic: "S18: ECS — EC2 vs Fargate launch types, IAM roles, ALB integration, EFS volumes, Auto Scaling · ECR · EKS overview · AWS App Runner", resource: "S18", tag: "tag-maarek", startId: 26099492 },
+      { date: "Jun 13, Sat", topic: "S19: Lambda (invocations, limits, concurrency, layers, Lambda@Edge, VPC) · DynamoDB (keys, GSI/LSI, DAX, Streams, Global Tables, TTL)", resource: "S19", tag: "tag-maarek", startId: 13528484 },
+      { date: "Jun 14, Sun", topic: "S19: API Gateway (REST vs HTTP vs WebSocket, cache, throttling, CORS) · Cognito User Pools vs Identity Pools · Step Functions · AppSync", resource: "S19", tag: "tag-maarek", startId: 13528488 },
+      { date: "Jun 15, Mon", topic: "S20: Serverless Architecture — MyTodoList app · serverless hosted website · microservices · Kinesis big data ingestion pipeline", resource: "S20", tag: "tag-maarek", startId: 13528394 },
+      { date: "Jun 16, Tue", topic: "⭐ Review Week 4 + 20 practice questions (SQS/SNS/Kinesis + Containers + Serverless)", resource: "Practice Exams", tag: "tag-dojo", review: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+    ]
+  },
+  {
+    week: 5,
+    title: "VPC & Networking",
+    dates: "June 17 – June 23",
+    days: [
+      { date: "Jun 17, Wed", topic: "#317 CIDR · #318 Default VPC · #319–324 VPC + Subnets Hands On · #323 IGW & Route Tables · #327 NAT Instances · #329 NAT Gateways", resource: "S27", tag: "tag-maarek", startId: 13528536 },
+      { date: "Jun 18, Thu", topic: "#325 Bastion Hosts · #332 NACL & Security Groups · #334 VPC Peering · #338 VPC Flow Logs · #339 VPC Flow Logs + Athena Hands On", resource: "S27", tag: "tag-maarek", startId: 13528558 },
+      { date: "Jun 19, Fri", topic: "#336 VPC Endpoints (Gateway vs Interface) · PrivateLink · #340 Site-to-Site VPN · Virtual Private Gateway · Customer Gateway", resource: "S27", tag: "tag-maarek", startId: 13528556 },
+      { date: "Jun 20, Sat", topic: "#342 Direct Connect & DX Gateway · #343 DX + Site-to-Site VPN · #344 Transit Gateway · #345 VPC Traffic Mirroring", resource: "S27", tag: "tag-maarek", startId: 13531250 },
+      { date: "Jun 21, Sun", topic: "#346 IPv6 for VPC · #348 Egress-Only IGW · #351 VPC Summary · #352 Networking Costs in AWS · #353 AWS Network Firewall", resource: "S27", tag: "tag-maarek", startId: 26099590 },
+      { date: "Jun 22, Mon", topic: "Catch-up: re-watch any VPC sections that felt unclear · draw your own VPC architecture diagram from memory", resource: "O'Reilly", tag: "tag-oreilly" },
+      { date: "Jun 23, Tue", topic: "⭐ Review Week 5 + 20 practice questions (VPC + Networking)", resource: "Practice Exams", tag: "tag-dojo", review: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+    ]
+  },
+  {
+    week: 6,
+    title: "Databases · Analytics · ML · Monitoring · Security",
+    dates: "June 24 – June 30",
+    days: [
+      { date: "Jun 24, Wed", topic: "S21: Databases in AWS — RDS/Aurora vs DynamoDB vs ElastiCache · DocumentDB · Neptune · Amazon Keyspaces · QLDB · Timestream (when to use each)", resource: "S21", tag: "tag-maarek", startId: 13528430 },
+      { date: "Jun 25, Thu", topic: "S22: Athena · Redshift · OpenSearch · EMR · QuickSight · Glue · Lake Formation · Kinesis Data Analytics · MSK · Big Data ingestion pipeline", resource: "S22", tag: "tag-maarek", startId: 13672442 },
+      { date: "Jun 26, Fri", topic: "S23: ML services overview — Rekognition · Transcribe · Polly · Translate · Lex · Comprehend · SageMaker · Forecast · Kendra · Personalize · Textract", resource: "S23", tag: "tag-maarek", startId: 32411792 },
+      { date: "Jun 27, Sat", topic: "#268–278 CloudWatch (metrics, alarms, logs, Contributor Insights, Synthetics) · #279 CloudTrail · #282 AWS Config · #284 CloudTrail vs CloudWatch vs Config", resource: "S24", tag: "tag-maarek", startId: 13723108 },
+      { date: "Jun 28, Sun", topic: "#285 AWS Organizations · #288 IAM Advanced Policies · #289 Resource-based Policies vs Roles · #290 Policy Evaluation Logic · #291 IAM Identity Center · #292 Directory Services · #294 Control Tower", resource: "S25", tag: "tag-maarek", startId: 18078393 },
+      { date: "Jun 29, Mon", topic: "#297 KMS · #299 KMS Multi-Region Keys · #302 SSM Parameter Store · #304 Secrets Manager · #306 ACM · #307 CloudHSM · #308 WAF · #309 Shield · #313 GuardDuty · #314 Inspector · #315 Macie", resource: "S26", tag: "tag-maarek", startId: 13528514 },
+      { date: "Jun 30, Tue", topic: "⭐ Review Week 6 + 20 practice questions (Databases + Analytics + Security + Monitoring)", resource: "Practice Exams", tag: "tag-dojo", review: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+    ]
+  },
+  {
+    week: 7,
+    title: "DR · Migrations · Other Services · Whitepapers",
+    dates: "July 1 – July 7",
+    days: [
+      { date: "Jul 1, Wed",  topic: "#354 Disaster Recovery in AWS (RPO/RTO, all 4 strategies) · #355 Elastic DRS · #356 DMS · #358 RDS & Aurora Migrations · #360 AWS Backup · #362 App Migration Service (MGN) · #363 Transferring Large Datasets · #364 VMware Cloud on AWS", resource: "S28", tag: "tag-maarek", startId: 13672692 },
+      { date: "Jul 2, Thu",  topic: "#365 Event Processing in AWS · #366 Caching Strategies · #367 Blocking an IP Address · #368 HPC on AWS · #369 EC2 Instance High Availability", resource: "S29", tag: "tag-maarek", startId: 18078459 },
+      { date: "Jul 3, Fri",  topic: "#371 CloudFormation · #374 Amazon SES · #375 Pinpoint · #376 SSM Session Manager · #377 SSM Other Services · #378 Cost Explorer · #380 AWS Outposts · #381 AWS Batch · #382 AppFlow · #383 AWS Amplify", resource: "S30", tag: "tag-maarek", startId: 13528576 },
+      { date: "Jul 4, Sat",  topic: "#386 AWS Well-Architected Framework & Tool (6 pillars) · #387 Trusted Advisor · #388 Architecture Examples", resource: "S31", tag: "tag-maarek", startId: 13672658 },
+      { date: "Jul 5, Sun",  topic: "#389 Exam Prep Intro · #390 State of Learning Checkpoint · #391 Exam Tips · #393 Exam Walkthrough · #396 How does the exam work? · Take Maarek's built-in practice exam", resource: "S32", tag: "tag-maarek", startId: 13725426 },
+      { date: "Jul 6, Mon",  topic: "Full course review — go through all section summaries, re-watch any weak topics, revise cheat sheet notes", resource: "Maarek", tag: "tag-maarek" },
+      { date: "Jul 7, Tue",  topic: "⭐ Review Week 7 + 20 practice questions (DR + Other Services + Exam Prep)", resource: "Practice Exams", tag: "tag-dojo", review: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+    ]
+  },
+  {
+    week: 8,
+    title: "First Full Mock Exams",
+    dates: "July 8 – July 14",
+    days: [
+      { date: "Jul 8, Wed",  topic: "📝 Mock Exam 1 — 65 questions, timed 130 min", resource: "Practice Exams", tag: "tag-exam", exam: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+      { date: "Jul 9, Thu",  topic: "Review every wrong answer — look up each topic in Maarek", resource: "Practice Exams", tag: "tag-dojo", courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+      { date: "Jul 10, Fri", topic: "📝 Mock Exam 2 — 65 questions, timed", resource: "Practice Exams", tag: "tag-exam", exam: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+      { date: "Jul 11, Sat", topic: "Review wrong answers + revisit weak services", resource: "Practice Exams", tag: "tag-dojo", courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+      { date: "Jul 12, Sun", topic: "📝 Mock Exam 3 — 65 questions, timed", resource: "Practice Exams", tag: "tag-exam", exam: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+      { date: "Jul 13, Mon", topic: "Deep dive weak areas identified from exams (VPC? Security? DR?)", resource: "Maarek / O'Reilly", tag: "tag-maarek" },
+      { date: "Jul 14, Tue", topic: "Re-read Well-Architected whitepaper · Review all 6 pillars + key service comparisons", resource: "AWS Whitepaper", tag: "tag-aws" },
+    ]
+  },
+  {
+    week: 9,
+    title: "Final Polish & Exam Day",
+    dates: "July 15 – July 25",
+    days: [
+      { date: "Jul 15, Wed", topic: "📝 Mock Exam 4 — target 78%+", resource: "Practice Exams", tag: "tag-exam", exam: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+      { date: "Jul 16, Thu", topic: "Review + targeted Maarek re-watches for weak topics", resource: "Maarek", tag: "tag-maarek", startId: 13725426 },
+      { date: "Jul 17, Fri", topic: "📝 Mock Exam 5", resource: "Practice Exams", tag: "tag-exam", exam: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+      { date: "Jul 18, Sat", topic: "Review + extra practice questions on weak topics", resource: "Practice Exams", tag: "tag-dojo", courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+      { date: "Jul 19, Sun", topic: "📝 Mock Exam 6 — final benchmark (target 78%+)", resource: "Practice Exams", tag: "tag-exam", exam: true, courseUrl: "https://cbtwapac.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" },
+      { date: "Jul 20, Mon", topic: "Light review only — key limits, service cheat sheet", resource: "Notes", tag: "tag-aws" },
+      { date: "Jul 21, Tue", topic: "Flashcard review: service comparisons, pricing models, exam traps", resource: "Notes", tag: "tag-aws" },
+      { date: "Jul 22, Wed", topic: "Rest — light reading only, no new content", resource: "—", tag: "tag-aws" },
+      { date: "Jul 23, Thu", topic: "Rest / logistics — confirm exam booking, check test centre location", resource: "—", tag: "tag-aws" },
+      { date: "Jul 25, Fri", topic: "🎓 EXAM DAY — AWS SAA-C03", resource: "Exam Centre", tag: "tag-exam", examDay: true },
+    ]
+  },
+];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let completed = {};
+let fileHandle = null;          // FileSystemFileHandle when connected
+let isSaving   = false;
+
+const STORAGE_KEY = 'saa-progress';
+
+// ─── Build data object ────────────────────────────────────────────────────────
+function buildDataObject() {
+  return {
+    completed,
+    notes: document.getElementById('study-notes')?.value || '',
+    savedAt: new Date().toISOString(),
+    version: 1
+  };
+}
+
+// ─── File System Access API ───────────────────────────────────────────────────
+async function connectOrSave() {
+  if (!('showSaveFilePicker' in window)) {
+    showToast('File API not supported — use Chrome 86+', 'error');
+    return;
+  }
+  try {
+    fileHandle = await window.showSaveFilePicker({
+      suggestedName: 'aws-study-progress.json',
+      types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }]
+    });
+    // Try to read existing progress from the chosen file first
+    await loadFromFile();
+    updateFileStatus();
+    showToast('Connected — auto-saving to file ✓', 'success');
+  } catch (e) {
+    if (e.name !== 'AbortError') showToast('Could not connect to file', 'error');
+  }
+}
+
+async function saveToFile() {
+  if (!fileHandle || isSaving) return;
+  isSaving = true;
+  try {
+    const writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(buildDataObject(), null, 2));
+    await writable.close();
+    updateFileStatus('saved');
+  } catch {
+    showToast('Could not write to file', 'error');
+  } finally {
+    isSaving = false;
+  }
+}
+
+async function loadFromFile() {
+  if (!fileHandle) return false;
+  try {
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (data.completed) {
+      completed = data.completed;
+      const ta = document.getElementById('study-notes');
+      if (ta && data.notes != null) ta.value = data.notes;
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
+function updateFileStatus(state) {
+  const el = document.getElementById('file-status');
+  const btn = document.getElementById('file-btn');
+  if (!fileHandle) {
+    el.textContent = '';
+    btn.textContent = '📂 Connect File';
+    btn.title = 'Connect to a JSON file for automatic saving';
+    return;
+  }
+  const name = fileHandle.name;
+  btn.textContent = '📂 ' + name;
+  btn.title = 'Click to reconnect or choose a different file';
+  el.textContent = state === 'saved' ? '✓ saved' : '● connected';
+  el.style.color = state === 'saved' ? 'var(--green)' : 'var(--accent)';
+}
+
+// ─── Save: file first, localStorage as fallback ───────────────────────────────
+async function saveToStorage() {
+  if (fileHandle) {
+    await saveToFile();
+  } else {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(buildDataObject()));
+  }
+}
+
+// ─── Load on startup: localStorage only (file needs user gesture) ─────────────
+function loadFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { completed: {}, notes: '' };
+    return JSON.parse(raw);
+  } catch { return { completed: {}, notes: '' }; }
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  const container = document.getElementById('weeks-container');
+  container.innerHTML = '';
+
+  weeks.forEach((week, wi) => {
+    const totalDays = week.days.length;
+    const doneDays  = week.days.filter((_, di) => completed[`${wi}-${di}`]).length;
+    const pct = Math.round((doneDays / totalDays) * 100);
+    const allDone = doneDays === totalDays;
+
+    const section = document.createElement('div');
+    section.className = 'week-section' + (isCurrentWeek(week) ? ' open' : '');
+    section.innerHTML = `
+      <div class="week-header" onclick="toggleWeek(this)">
+        <div class="week-header-left">
+          <span class="week-badge ${allDone ? 'completed' : ''}">
+            ${allDone ? '✓ Done' : 'Week ' + week.week}
+          </span>
+          <div>
+            <div class="week-title">${week.title}</div>
+            <div class="week-dates">${week.dates}</div>
+          </div>
+        </div>
+        <div class="week-header-right">
+          <div class="week-progress-mini">
+            <span>${doneDays}/${totalDays}</span>
+            <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
+            <span>${pct}%</span>
+          </div>
+          <span class="chevron">⌄</span>
+        </div>
+      </div>
+      <div class="week-body">
+        ${week.days.map((day, di) => `
+          <div class="day-row ${completed[`${wi}-${di}`] ? 'done' : ''} ${day.review ? 'day-review' : ''} ${day.exam ? 'day-exam' : ''} ${day.examDay ? 'day-exam-day' : ''}"
+               onclick="toggleDay(${wi}, ${di})">
+            <div class="day-checkbox"></div>
+            <div class="day-info">
+              <div class="day-date">${day.date}</div>
+              <div class="day-topic">${day.topic}</div>
+              <span class="day-resource ${day.tag}">${day.resource}</span>${day.startId ? `<a class="udemy-link" href="https://cbtwapac.udemy.com/course/aws-certified-solutions-architect-associate-saa-c03/learn/lecture/${day.startId}" target="_blank" onclick="event.stopPropagation()">▶ Open in Udemy</a>` : ''}${day.courseUrl ? `<a class="udemy-link" href="${day.courseUrl}" target="_blank" onclick="event.stopPropagation()">▶ Open in Udemy</a>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(section);
+  });
+
+  updateStats();
+}
+
+function isCurrentWeek(week) {
+  const today = new Date();
+  const allDays = week.days.map(d => d.date);
+  // Simple: open the week whose dates span today
+  // We'll just open the first week that isn't fully complete
+  const wi = weeks.indexOf(week);
+  const totalDays = week.days.length;
+  const doneDays  = week.days.filter((_, di) => completed[`${wi}-${di}`]).length;
+  return doneDays < totalDays && (wi === 0 || allPreviousWeeksDone(wi));
+}
+
+function allPreviousWeeksDone(wi) {
+  for (let i = 0; i < wi; i++) {
+    const w = weeks[i];
+    const done = w.days.every((_, di) => completed[`${i}-${di}`]);
+    if (!done) return false;
+  }
+  return true;
+}
+
+function toggleWeek(header) {
+  const section = header.closest('.week-section');
+  section.classList.toggle('open');
+}
+
+function toggleDay(wi, di) {
+  const key = `${wi}-${di}`;
+  completed[key] = !completed[key];
+  // Also mirror to localStorage so data isn't lost if file disconnects
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(buildDataObject()));
+  saveToStorage();
+  render();
+}
+
+function updateStats() {
+  const totalTasks = weeks.reduce((s, w) => s + w.days.length, 0);
+  const doneTasks  = Object.values(completed).filter(Boolean).length;
+  const pct        = Math.round((doneTasks / totalTasks) * 100);
+
+  const examDate = new Date('2026-07-25');
+  const today    = new Date();
+  today.setHours(0, 0, 0, 0);
+  const daysLeft = Math.max(0, Math.ceil((examDate - today) / 86400000));
+
+  const currentWeekIdx = weeks.findIndex((w, wi) =>
+    w.days.some((_, di) => !completed[`${wi}-${di}`])
+  );
+
+  document.getElementById('pct-overall').textContent = pct + '%';
+  document.getElementById('tasks-done').textContent = `${doneTasks} of ${totalTasks} days completed`;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('pct-label').textContent = pct + '% complete';
+  document.getElementById('days-left').textContent = daysLeft;
+  document.getElementById('days-remaining').textContent = daysLeft;
+  document.getElementById('header-pct').textContent = pct + '%';
+
+  if (currentWeekIdx >= 0) {
+    document.getElementById('current-week').textContent = 'Week ' + weeks[currentWeekIdx].week;
+    document.getElementById('current-week-name').textContent = weeks[currentWeekIdx].title;
+  } else {
+    document.getElementById('current-week').textContent = '🎉';
+    document.getElementById('current-week-name').textContent = 'All done!';
+  }
+
+  // Streak: count consecutive days done from today backwards
+  // Simple implementation: count how many days in a row from the most recent completed day
+  document.getElementById('streak').textContent = calculateStreak();
+}
+
+function calculateStreak() {
+  // Flatten all days in order with their completion state
+  let allDays = [];
+  weeks.forEach((w, wi) => {
+    w.days.forEach((d, di) => {
+      allDays.push({ key: `${wi}-${di}`, done: !!completed[`${wi}-${di}`] });
+    });
+  });
+
+  // Count consecutive done days from the end of completed block
+  let streak = 0;
+  for (let i = allDays.length - 1; i >= 0; i--) {
+    if (allDays[i].done) streak++;
+    else break;
+  }
+  // Actually count from the last done day backwards
+  let lastDoneIdx = -1;
+  for (let i = allDays.length - 1; i >= 0; i--) {
+    if (allDays[i].done) { lastDoneIdx = i; break; }
+  }
+  if (lastDoneIdx === -1) return 0;
+  streak = 0;
+  for (let i = lastDoneIdx; i >= 0; i--) {
+    if (allDays[i].done) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function resetProgress() {
+  if (confirm('Reset all progress? This cannot be undone.')) {
+    completed = {};
+    saveToStorage();
+    render();
+    showToast('Progress reset', 'success');
+  }
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 2800);
+}
+
+// ─── Notes persistence ────────────────────────────────────────────────────────
+let notesTimer;
+
+document.addEventListener('DOMContentLoaded', () => {
+  // On startup: load from localStorage (file needs a user gesture to connect)
+  const data = loadFromLocalStorage();
+  completed  = data.completed || {};
+
+  const ta = document.getElementById('study-notes');
+  if (ta) {
+    ta.value = data.notes || '';
+    ta.addEventListener('input', () => {
+      clearTimeout(notesTimer);
+      notesTimer = setTimeout(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(buildDataObject()));
+        saveToStorage();
+      }, 600);
+    });
+  }
+
+  render();
+});
+</script>
+</body>
+</html>
