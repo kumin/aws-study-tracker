@@ -496,16 +496,90 @@
     }
 
     .header-btn:hover { border-color: var(--blue); color: var(--blue); }
-    .header-btn.btn-export:hover { border-color: var(--green); color: var(--green); }
+    .header-btn.btn-github:hover { border-color: var(--green); color: var(--green); }
     .header-btn.btn-reset:hover  { border-color: var(--red);   color: var(--red);   }
 
-    #file-btn {
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    /* ── GitHub setup modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
     }
-    #file-btn:hover { border-color: var(--green); color: var(--green); }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      width: 420px;
+      max-width: 95vw;
+    }
+    .modal h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .modal p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .modal p a { color: var(--blue); }
+    .modal label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      margin-top: 12px;
+    }
+    .modal input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal input:focus { border-color: var(--accent); }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: flex-end;
+    }
+    .modal-btn {
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .modal-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .modal-btn.primary {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+    .modal-btn.primary:hover { background: #ffb300; border-color: #ffb300; }
+
+    #gh-status {
+      font-size: 11px;
+      margin-top: 4px;
+      min-height: 16px;
+    }
 
     /* ── Toast notification ── */
     #toast {
@@ -568,8 +642,8 @@
     <div class="header-stats">
       <div class="stat-pill">Days left <span id="days-left">—</span></div>
       <div class="stat-pill">Progress <span id="header-pct">0%</span></div>
-      <button class="header-btn btn-export" id="file-btn" onclick="connectOrSave()" title="Connect to a JSON file for automatic saving">📂 Connect File</button>
-      <span id="file-status" style="font-size:12px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <button class="header-btn btn-github" id="gh-btn" onclick="openModal()" title="Save progress to GitHub repo">⚙ GitHub</button>
+      <span id="gh-sync-status" style="font-size:11px;color:var(--text-muted);"></span>
       <button class="header-btn btn-reset" onclick="resetProgress()">↺ Reset</button>
     </div>
   </div>
@@ -648,8 +722,32 @@
 </main>
 
 <footer>
-  AWS SAA-C03 Study Tracker · Progress auto-saved in browser · Export anytime for a backup · Good luck! 🚀
+  AWS SAA-C03 Study Tracker · Progress saved to GitHub repo · Good luck! 🚀
 </footer>
+
+<!-- GitHub Setup Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h3>⚙ GitHub Progress Sync</h3>
+    <p>
+      Progress is saved as <code>progress.json</code> in your GitHub repo.<br>
+      You need a Personal Access Token with <strong>repo</strong> scope (or <strong>public_repo</strong> for public repos).<br>
+      <a href="https://github.com/settings/tokens/new?scopes=public_repo&description=AWS+Study+Tracker" target="_blank">→ Create a token on GitHub</a>
+    </p>
+    <label>GitHub Username</label>
+    <input id="gh-owner" type="text" placeholder="your-username" />
+    <label>Repository Name</label>
+    <input id="gh-repo" type="text" placeholder="aws-study-tracker" />
+    <label>Personal Access Token</label>
+    <input id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxx" />
+    <div id="gh-status" style="color:var(--text-muted)"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn" onclick="clearGithubConfig()" style="border-color:#ef444444;color:#ef4444;">Disconnect</button>
+      <button class="modal-btn primary" onclick="saveGithubConfig()">Connect & Sync</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast"></div>
 
@@ -789,11 +887,14 @@ const weeks = [
 ];
 
 // ─── State ────────────────────────────────────────────────────────────────────
-let completed = {};
-let fileHandle = null;          // FileSystemFileHandle when connected
+let completed  = {};
+let ghConfig   = null;   // { owner, repo, token, sha }
 let isSaving   = false;
+let saveTimer  = null;
 
-const STORAGE_KEY = 'saa-progress';
+const STORAGE_KEY    = 'saa-progress';
+const GH_CONFIG_KEY  = 'saa-github-config';
+const PROGRESS_FILE  = 'progress.json';
 
 // ─── Build data object ────────────────────────────────────────────────────────
 function buildDataObject() {
@@ -805,89 +906,176 @@ function buildDataObject() {
   };
 }
 
-// ─── File System Access API ───────────────────────────────────────────────────
-async function connectOrSave() {
-  if (!('showSaveFilePicker' in window)) {
-    showToast('File API not supported — use Chrome 86+', 'error');
-    return;
-  }
-  try {
-    fileHandle = await window.showSaveFilePicker({
-      suggestedName: 'aws-study-progress.json',
-      types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }]
-    });
-    // Try to read existing progress from the chosen file first
-    await loadFromFile();
-    updateFileStatus();
-    showToast('Connected — auto-saving to file ✓', 'success');
-  } catch (e) {
-    if (e.name !== 'AbortError') showToast('Could not connect to file', 'error');
-  }
+// ─── localStorage (local cache / offline fallback) ────────────────────────────
+function saveLocal(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-async function saveToFile() {
-  if (!fileHandle || isSaving) return;
-  isSaving = true;
+function loadLocal() {
   try {
-    const writable = await fileHandle.createWritable();
-    await writable.write(JSON.stringify(buildDataObject(), null, 2));
-    await writable.close();
-    updateFileStatus('saved');
-  } catch {
-    showToast('Could not write to file', 'error');
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { completed: {}, notes: '' };
+  } catch { return { completed: {}, notes: '' }; }
+}
+
+// ─── GitHub Contents API ──────────────────────────────────────────────────────
+function ghHeaders(token) {
+  return {
+    'Authorization': `token ${token}`,
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json'
+  };
+}
+
+function ghFileUrl(cfg) {
+  return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${PROGRESS_FILE}`;
+}
+
+async function githubLoad(cfg) {
+  const res = await fetch(ghFileUrl(cfg), { headers: ghHeaders(cfg.token) });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`GitHub read failed: ${res.status}`);
+  const json = await res.json();
+  const content = JSON.parse(decodeURIComponent(escape(atob(json.content))));
+  return { data: content, sha: json.sha };
+}
+
+async function githubSave(cfg, data) {
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  const body    = { message: 'Update study progress', content };
+  if (cfg.sha) body.sha = cfg.sha;
+  const res = await fetch(ghFileUrl(cfg), {
+    method: 'PUT',
+    headers: ghHeaders(cfg.token),
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error(`GitHub save failed: ${res.status}`);
+  const result = await res.json();
+  return result.content.sha;
+}
+
+// ─── Save: GitHub + localStorage ─────────────────────────────────────────────
+async function saveToStorage() {
+  const data = buildDataObject();
+  saveLocal(data);
+  if (!ghConfig || isSaving) return;
+  isSaving = true;
+  setSyncStatus('saving');
+  try {
+    ghConfig.sha = await githubSave(ghConfig, data);
+    localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(ghConfig));
+    setSyncStatus('saved');
+  } catch (e) {
+    setSyncStatus('error');
+    console.error(e);
   } finally {
     isSaving = false;
   }
 }
 
-async function loadFromFile() {
-  if (!fileHandle) return false;
-  try {
-    const file = await fileHandle.getFile();
-    const text = await file.text();
-    const data = JSON.parse(text);
-    if (data.completed) {
-      completed = data.completed;
-      const ta = document.getElementById('study-notes');
-      if (ta && data.notes != null) ta.value = data.notes;
-      return true;
-    }
-  } catch {}
-  return false;
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToStorage, 1500);
 }
 
-function updateFileStatus(state) {
-  const el = document.getElementById('file-status');
-  const btn = document.getElementById('file-btn');
-  if (!fileHandle) {
-    el.textContent = '';
-    btn.textContent = '📂 Connect File';
-    btn.title = 'Connect to a JSON file for automatic saving';
+// ─── Sync status indicator ────────────────────────────────────────────────────
+function setSyncStatus(state) {
+  const el  = document.getElementById('gh-sync-status');
+  const btn = document.getElementById('gh-btn');
+  const map = {
+    connected: { text: '● synced',     color: 'var(--green)' },
+    saving:    { text: '↑ saving…',    color: 'var(--accent)' },
+    saved:     { text: '✓ saved',      color: 'var(--green)' },
+    error:     { text: '✗ sync error', color: 'var(--red)' },
+    none:      { text: '',              color: '' }
+  };
+  const s = map[state] || map.none;
+  el.textContent = s.text;
+  el.style.color = s.color;
+  if (ghConfig) {
+    btn.textContent      = `⚙ ${ghConfig.owner}/${ghConfig.repo}`;
+    btn.style.color       = 'var(--green)';
+    btn.style.borderColor = '#22c55e66';
+  } else {
+    btn.textContent      = '⚙ GitHub';
+    btn.style.color       = '';
+    btn.style.borderColor = '';
+  }
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function openModal() {
+  if (ghConfig) {
+    document.getElementById('gh-owner').value = ghConfig.owner || '';
+    document.getElementById('gh-repo').value  = ghConfig.repo  || '';
+    document.getElementById('gh-token').value = ghConfig.token || '';
+  }
+  document.getElementById('gh-status').textContent = '';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+async function saveGithubConfig() {
+  const owner  = document.getElementById('gh-owner').value.trim();
+  const repo   = document.getElementById('gh-repo').value.trim();
+  const token  = document.getElementById('gh-token').value.trim();
+  const status = document.getElementById('gh-status');
+
+  if (!owner || !repo || !token) {
+    status.textContent = '⚠ All fields are required.';
+    status.style.color = 'var(--red)';
     return;
   }
-  const name = fileHandle.name;
-  btn.textContent = '📂 ' + name;
-  btn.title = 'Click to reconnect or choose a different file';
-  el.textContent = state === 'saved' ? '✓ saved' : '● connected';
-  el.style.color = state === 'saved' ? 'var(--green)' : 'var(--accent)';
-}
 
-// ─── Save: file first, localStorage as fallback ───────────────────────────────
-async function saveToStorage() {
-  if (fileHandle) {
-    await saveToFile();
-  } else {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(buildDataObject()));
+  status.textContent = 'Connecting…';
+  status.style.color = 'var(--accent)';
+
+  const cfg = { owner, repo, token, sha: null };
+  try {
+    const result = await githubLoad(cfg);
+    if (result) {
+      cfg.sha = result.sha;
+      const localDone  = Object.values(completed).filter(Boolean).length;
+      const remoteDone = Object.values(result.data.completed || {}).filter(Boolean).length;
+      if (remoteDone > localDone) {
+        if (confirm(`GitHub has ${remoteDone} days completed vs your local ${localDone}. Load from GitHub?`)) {
+          completed = result.data.completed || {};
+          const ta = document.getElementById('study-notes');
+          if (ta && result.data.notes) ta.value = result.data.notes;
+          saveLocal(result.data);
+          render();
+        }
+      }
+      status.textContent = '✓ Connected — found existing progress.json!';
+    } else {
+      cfg.sha = await githubSave(cfg, buildDataObject());
+      status.textContent = '✓ Created progress.json in your repo!';
+    }
+    status.style.color = 'var(--green)';
+    ghConfig = cfg;
+    localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(ghConfig));
+    setSyncStatus('connected');
+    setTimeout(closeModal, 1200);
+  } catch (e) {
+    status.textContent = `✗ ${e.message} — check your token and repo name.`;
+    status.style.color = 'var(--red)';
   }
 }
 
-// ─── Load on startup: localStorage only (file needs user gesture) ─────────────
-function loadFromLocalStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { completed: {}, notes: '' };
-    return JSON.parse(raw);
-  } catch { return { completed: {}, notes: '' }; }
+function clearGithubConfig() {
+  if (!confirm('Disconnect GitHub sync? Progress stays in localStorage.')) return;
+  ghConfig = null;
+  localStorage.removeItem(GH_CONFIG_KEY);
+  setSyncStatus('none');
+  closeModal();
+  showToast('GitHub sync disconnected', '');
 }
 
 // ─── Render ───────────────────────────────────────────────────────────────────
@@ -971,10 +1159,8 @@ function toggleWeek(header) {
 function toggleDay(wi, di) {
   const key = `${wi}-${di}`;
   completed[key] = !completed[key];
-  // Also mirror to localStorage so data isn't lost if file disconnects
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(buildDataObject()));
-  saveToStorage();
   render();
+  scheduleSave();
 }
 
 function updateStats() {
@@ -1044,8 +1230,8 @@ function calculateStreak() {
 function resetProgress() {
   if (confirm('Reset all progress? This cannot be undone.')) {
     completed = {};
-    saveToStorage();
     render();
+    saveToStorage();
     showToast('Progress reset', 'success');
   }
 }
@@ -1060,24 +1246,46 @@ function showToast(msg, type = '') {
   toastTimer = setTimeout(() => { t.className = ''; }, 2800);
 }
 
-// ─── Notes persistence ────────────────────────────────────────────────────────
-let notesTimer;
-
-document.addEventListener('DOMContentLoaded', () => {
-  // On startup: load from localStorage (file needs a user gesture to connect)
-  const data = loadFromLocalStorage();
+document.addEventListener('DOMContentLoaded', async () => {
+  // 1. Load from localStorage immediately (instant, no network)
+  const data = loadLocal();
   completed  = data.completed || {};
 
   const ta = document.getElementById('study-notes');
   if (ta) {
     ta.value = data.notes || '';
-    ta.addEventListener('input', () => {
-      clearTimeout(notesTimer);
-      notesTimer = setTimeout(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(buildDataObject()));
-        saveToStorage();
-      }, 600);
-    });
+    ta.addEventListener('input', scheduleSave);
+  }
+
+  // 2. Restore saved GitHub config
+  try {
+    const raw = localStorage.getItem(GH_CONFIG_KEY);
+    if (raw) {
+      ghConfig = JSON.parse(raw);
+      setSyncStatus('connected');
+
+      // 3. Fetch latest progress from GitHub in background
+      setSyncStatus('saving');
+      const result = await githubLoad(ghConfig);
+      if (result) {
+        ghConfig.sha = result.sha;
+        localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(ghConfig));
+        const remoteDone = Object.values(result.data.completed || {}).filter(Boolean).length;
+        const localDone  = Object.values(completed).filter(Boolean).length;
+        if (remoteDone >= localDone) {
+          completed = result.data.completed || {};
+          if (ta && result.data.notes) ta.value = result.data.notes;
+          saveLocal(result.data);
+        }
+        render();
+        setSyncStatus('connected');
+      } else {
+        setSyncStatus('connected');
+      }
+    }
+  } catch (e) {
+    console.warn('GitHub load on startup failed:', e);
+    setSyncStatus('error');
   }
 
   render();
